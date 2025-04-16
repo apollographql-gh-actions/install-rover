@@ -1,0 +1,48 @@
+# Run this job by creating a new release in GitHub and create a new tag
+# with the new full semver version vMAJOR.MINOR.PATCH
+#
+# This job will then parse out the MAJOR and MINOR version and update
+# those lightweight git tags for those only referencing those in their actions.
+#
+# e.g. I created the new release v1.2.3 manually in GH releases
+# -> It will identify this is a new release for v1 and v1.2
+# -> If those tags exist, delete them first
+# -> Create new tags v1 and v1.2 that point at v1.2.3
+
+name: Create release
+on:
+  push:
+    tags:
+      - 'v[0-9]+\.[0-9]+\.[0-9]+'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '20'
+          fetch-tags: 'true'
+      - name: Get version parts
+        id: version
+        run: |
+          tag=${{ github.ref_name }}
+          version=${tag:1}
+          major=$(echo "$version" | cut -d '.' -f 1)
+          minor=$(echo "$version" | cut -d '.' -f 2)
+          patch=$(echo "$version" | cut -d '.' -f 3)
+
+          echo "release=$tag" | tee -a $GITHUB_OUTPUT
+          echo "version=$version" | tee -a $GITHUB_OUTPUT
+          echo "major=$major" | tee -a $GITHUB_OUTPUT
+          echo "minor=$minor" | tee -a $GITHUB_OUTPUT
+          echo "patch=$patch" | tee -a $GITHUB_OUTPUT
+      - name: Delete existing lightweight tags (vMAJOR) (vMAJOR.MINOR)
+        run: |
+          git tag -d v${{ steps.version.outputs.major }} v${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }} || true
+          git push origin :v${{ steps.version.outputs.major }} :v${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }} || true
+      - name: Tag updated major and minor lightweight versions
+        run: |
+          git tag v${{ steps.version.outputs.major }}
+          git tag v${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}
+          git push origin v${{ steps.version.outputs.major }} v${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}

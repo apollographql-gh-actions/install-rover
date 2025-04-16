@@ -1,0 +1,21 @@
+name: Install Rover
+description: Installs the Apollo Rover CLI
+author: Apollo GraphQL
+branding:
+  icon: terminal
+
+inputs:
+  version:
+    description: The version of Rover CLI to install
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - if: runner.os != 'Windows'
+      run: ${{ github.action_path }}/install.sh ${{ inputs.version }}
+      shell: bash
+    - if: runner.os == 'Windows'
+      run: ${{ github.action_path }}/install.ps1 ${{ inputs.version }}
+      shell: pwsh

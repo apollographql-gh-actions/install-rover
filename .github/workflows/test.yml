@@ -1,0 +1,41 @@
+name: Test rover actions
+on:
+  push:
+    branches:
+      - '*'
+    paths-ignore:
+      - .github/workflows/release.yml
+      - README.md
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - .github/workflows/release.yml
+      - README.md
+  workflow_dispatch:
+
+jobs:
+  install:
+    name: Install Rover CLI
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install latest
+        uses: ./
+      - name: Verify latest
+        run: |
+          echo "Rover latest: $(rover --version)"
+      - name: Install specific version
+        uses: ./
+        with:
+          version: ${{ vars.ROVER_TEST_VERSION }}
+      - name: Verify specific version
+        run: |
+          echo "Rover@${{ vars.ROVER_TEST_VERSION}}: $(rover --version)"
+          [ "$(rover --version | cut -d ' ' -f 2)" != "${{ vars.ROVER_TEST_VERSION }}" ] && exit 1 || echo "Version matches"
+        shell: bash
