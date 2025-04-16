@@ -3,6 +3,8 @@ description: Installs the Apollo Rover CLI
 author: Apollo GraphQL
 branding:
   icon: terminal
+  color: blue
+  
 
 inputs:
   version:
