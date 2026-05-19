@@ -1,16 +1,33 @@
-# Install Rover CLI GitHub Action
+# Install Rover CLI
 
-This is a GitHub Action to install the [Apollo Rover CLI](https://rover.apollo.dev/) on GitHub Actions runners. Once installed, `rover` is added to `PATH`, so it can be used in subsequent steps.
+GitHub Action that installs the [Apollo Rover CLI](https://rover.apollo.dev/) on a GitHub Actions runner. After this step, `rover` is on `PATH` and can be invoked from subsequent steps.
 
-### Inputs
+Runs on all platforms that Rover publishes a native binary for (GNU Linux + MUSL Linux, MacOS Intel + ARM, and Windows).
 
-| Name | Description | Default |
-| ---- | ----------- | ------- |
-| `version` | The version of [`rover`](https://rover.apollo.dev/) to install | `latest` |
+## Inputs
 
-### Usage
+This action takes no inputs. The Rover version installed is pinned to the action's release tag (see [Versioning](#versioning) below).
 
-Installing a specific version of `rover`:
+## Usage
+
+```yaml
+- uses: apollographql-gh-actions/install-rover@rover-v0.38.1
+- env:
+    APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+  run: rover subgraph check ${{ vars.APOLLO_GRAPH_REF }} --name my-subgraph --schema ./schema.graphql
+```
+
+## Versioning
+
+Action releases are pinned in lockstep with Rover releases. Lockstep tags use a `rover-` prefix.
+
+- `@rover-v0.X.Y` — installs Rover `0.X.Y` exactly. Both this action and Rover use immutable releases so no SHA pinning is required.
+- `@v1` — pre-lockstep version that accepts a `version:` input defaulting to `latest`. This does not guarantee immutability
+and should be used only in cases where pinning a specific version is not desirable.
+
+## Migrating from `@v1`
+
+The `version:` input no longer exists. Instead of:
 
 ```yaml
 - uses: apollographql-gh-actions/install-rover@v1
@@ -18,18 +35,12 @@ Installing a specific version of `rover`:
     version: 0.28.1
 ```
 
-Install the latest version:
+write:
 
 ```yaml
-- uses: apollographql-gh-actions/install-rover@v1
+- uses: apollographql-gh-actions/install-rover@rover-v0.28.1
 ```
 
-Run a manual rover command after install:
+## Source
 
-```yaml
-- uses: apollographql-gh-actions/install-rover@v1
-- name: Run manual schema check (instead of included commands)
-  env:
-    APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
-  run: rover subgraph check ${{ vars.APOLLO_GRAPH_REF }} --name subgraph-name --schema ./path/to/schema.graphql
-```
+This action is generated from [`actions/install/action.yml`](https://github.com/apollographql/rover/blob/main/actions/install/action.yml) in the Rover repo (plus the canonical install scripts under `installers/binstall/scripts/`) and republished here on every Rover release.
